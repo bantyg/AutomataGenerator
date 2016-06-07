@@ -1,14 +1,12 @@
 var _ = require('lodash');
 
 var DFAGenerator = function (tuple) {
-    var stateMachine = [tuple.initialState];
     return function (string) {
-        var next = tuple.transitionFun[tuple.initialState][string[0]];
-        string.split('').slice(1).forEach(function (alphabet) {
-            next = tuple.transitionFun[next][alphabet];
-            stateMachine.push(next);
-        });
-        return tuple.finalStates.indexOf(_.last(stateMachine)) != -1;
+        var initialState = tuple.transitionFun[tuple.initialState][string[0]];
+        var finalState = string.split('').slice(1).reduce(function (prev,next) {
+            return tuple.transitionFun[prev][next];
+        },initialState);
+        return tuple.finalStates.indexOf(finalState) != -1;
     };
 };
 
