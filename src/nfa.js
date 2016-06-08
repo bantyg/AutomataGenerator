@@ -11,11 +11,7 @@ var NFAGenerator = function (tuple) {
             return _.flatten(states);
         },[initialState]);
 
-        var isNFA = finalState.filter(function (state) {
-            return tuple.finalStates.indexOf(state) > -1;
-        });
-
-        return isNFA.length > 0;
+        return _.intersection(tuple.finalStates, finalState).length > 0;
     };
 };
 
