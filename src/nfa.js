@@ -1,15 +1,40 @@
 var _ = require('lodash');
 
 var NFAGenerator = function (tuple) {
-    var stateMachine = [tuple.initialState];
     return function (string) {
-        var next = tuple.transitionFun[tuple.initialState][string[0]];
-        string.split('').slice(1).forEach(function (alphabet) {
-            next = tuple.transitionFun[next][alphabet];
-            stateMachine.push(next);
+        var initialState = tuple.initialState;
+
+        var finalState = string.split('').reduce(function (prev,next) {
+            var states =  prev.map(function (state) {
+                return tuple.transitionFun[state][next];
+            });
+            return _.flatten(states);
+        },[initialState]);
+
+        var isNFA = finalState.filter(function (state) {
+            return tuple.finalStates.indexOf(state) > -1;
         });
-        return tuple.finalStates.indexOf(_.last(stateMachine)) != -1;
+
+        return isNFA.length > 0;
     };
 };
+
+var lang = {
+    states: ["a","b"],
+    transitionFun:{a:{
+            0:['a'],
+            1:['a','b']
+        }, b:{
+            0:[],
+            1:[]
+        }
+    } ,
+    initialState:"a" , finalStates:['b']
+};
+
+
+console.log(NFAGenerator(lang)("01"));
+
+
 
 exports.NFAGenerator = NFAGenerator;

@@ -1,7 +1,7 @@
 var assert = require('chai').assert;
 var DFAGenerator = require('../src/dfa.js').DFAGenerator;
 
-describe('Array', function() {
+describe('DFA generator', function() {
     describe('All strings which has even number of zeros', function () {
         var lang = {
             states: ["a","b"],

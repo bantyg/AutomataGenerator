@@ -1,5 +1,3 @@
-var _ = require('lodash');
-
 var DFAGenerator = function (tuple) {
     return function (string) {
         var initialState = tuple.transitionFun[tuple.initialState][string[0]];
@@ -9,7 +7,5 @@ var DFAGenerator = function (tuple) {
         return tuple.finalStates.indexOf(finalState) != -1;
     };
 };
-
- 
 
 exports.DFAGenerator = DFAGenerator;
