@@ -1,5 +1,5 @@
 var assert = require('chai').assert;
-var NFAWithEpsilon = require('../src/nfaWithEpsolon.js').nfaWithEpsilon;
+var NFAWithEpsilon = require('../src/nfa.js').NFAGenerator;
 
 describe("NFA Generator", function(){
     describe("NFA for languages with epsilon", function(){
@@ -50,9 +50,8 @@ describe("NFA Generator", function(){
             };
 
             var nfa_two_or_three_length = NFAWithEpsilon(tuple_two_or_three_length);
-
-            // assert.isFalse(nfa_two_or_three_length("0"));
-            // assert.isTrue(nfa_two_or_three_length("00"));
+            assert.isFalse(nfa_two_or_three_length("0"));
+            assert.isTrue(nfa_two_or_three_length("00"));
             assert.isTrue(nfa_two_or_three_length("000"));
 
         })
