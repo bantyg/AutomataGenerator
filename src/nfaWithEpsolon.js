@@ -4,26 +4,23 @@ var nfaWithEpsilon = function (tuple) {
     return function (string) {
         var initialState = tuple.initialState;
         var finalState = string.split('').reduce(function (prev,next) {
-            var states = [];
-            if(tuple.transitionFun[prev[0]]["E"]){
-                states = tuple.transitionFun[prev[0]]["E"].map(function (state) {
-                    return tuple.transitionFun[state][next];
-                })
-            }
-            else {
-                states =  prev.map(function (state) {
-                    return tuple.transitionFun[state][next];
-                });
-
-            }
-            return _.flatten(states);
+            var epsilonTransition = prev.map(function (state) {
+                if(!tuple.transitionFun[state]){
+                    return state;
+                }
+                else if(tuple.transitionFun[state]["E"]){
+                    return tuple.transitionFun[state]["E"].map(function (state) {
+                        return tuple.transitionFun[state][next];
+                    })
+                }
+                else {
+                     return tuple.transitionFun[state][next];
+                }
+            });
+            return _.flattenDeep(epsilonTransition);
         },[initialState]);
+        return _.intersection(tuple.finalStates, finalState).length > 0;
 
-        var isNFA = finalState.filter(function (state) {
-            return tuple.finalStates.indexOf(state) > -1;
-        });
-
-        return isNFA.length > 0;
     };
 };
 
