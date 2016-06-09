@@ -24,17 +24,4 @@ var NFAGenerator = function (tuple) {
         };
 };
 
-var lang = {
-    states: ["a","b"],
-    transitionFun:{a:{
-            0:['a'],
-            1:['a','b']
-        }, b:{
-            0:[],
-            1:[]
-        }
-    } ,
-    initialState:"a" , finalStates:['b']
-};
-
 exports.NFAGenerator = NFAGenerator;
