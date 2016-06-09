@@ -8,8 +8,8 @@ var NFAGenerator = function (tuple) {
                     if(!tuple.transitionFun[state]){
                         return state;
                     }
-                    else if(tuple.transitionFun[state]["E"]){
-                        return tuple.transitionFun[state]["E"].map(function (state) {
+                    else if(tuple.transitionFun[state]["e"]){
+                        return tuple.transitionFun[state]["e"].map(function (state) {
                             return tuple.transitionFun[state][next];
                         })
                     }
