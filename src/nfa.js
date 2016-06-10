@@ -31,14 +31,26 @@ var stateTraverser = function (tuple, alphabet, state) {
     return states;
 };
 
+var NFAForEmptyString = function (tuple) {
+    var result = tuple.transitionFun[tuple.initialState]["e"].map(function (state) {
+        return tuple.transitionFun[state]["e"] ? tuple.transitionFun[state]["e"] : state
+    });
+    return _.flatMapDeep(result);
+};
+
 var NFAGenerator = function (tuple) {
     return function (string) {
-        var finalState = string.split('').reduce(function (states,alphabet) {
-            var subStates =  states.map(function (state) {
-                return stateTraverser(tuple,alphabet,state)
-            });
-            return _.flattenDeep(subStates);
-        },[tuple.initialState]);
+        var finalState = [];
+        if(string.length == 0 && tuple.transitionFun[tuple.initialState]["e"])
+            finalState = NFAForEmptyString(tuple);
+        else {
+            finalState = string.split('').reduce(function (states,alphabet) {
+                var subStates =  states.map(function (state) {
+                    return stateTraverser(tuple,alphabet,state)
+                });
+                return _.flattenDeep(subStates);
+            },[tuple.initialState]);
+        }
         return _.intersection(tuple.finalStates, finalState).length > 0;
     };
 };
