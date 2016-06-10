@@ -1,57 +1,38 @@
 var _ = require('lodash');
 
-var handleEpsilon = function (tuple, alphabet,state) {
-    return tuple.transitionFun[state]['e'].map(function (subState) {
-        if (tuple.transitionFun[subState]['e']) {
-            return stateTraverser(tuple, alphabet, subState);
-        }
-        else return tuple.transitionFun[subState][alphabet] ? tuple.transitionFun[subState][alphabet] : subState;
+var checkSubset = function (superSet, subset) {
+    var set = subset.filter(function (value) {
+        return superSet.indexOf(value) > -1;
     });
+    return set.length == subset.length;
 };
 
-var getStatesFollowedByEpsilons = function (tuple, state, alphabet) {
-    return tuple.transitionFun[state][alphabet].map(function (eachState) {
-        if(tuple.transitionFun[eachState] && tuple.transitionFun[eachState]['e']){
-            return handleEpsilon(tuple,alphabet,eachState);
-        }
-        else return [];
+var getAllEpsilonStates = function (transitionFunction, states) {
+    var array = states;
+    var currentStates = states.map(function (state) {
+        if(transitionFunction[state] && transitionFunction[state]["e"])
+            return transitionFunction[state]["e"];
     });
-};
-
-var stateTraverser = function (tuple, alphabet, state) {
-    var states = [];
-    if(!tuple.transitionFun[state]) return [];
-    if(tuple.transitionFun[state][alphabet]){
-        var subStates =  getStatesFollowedByEpsilons(tuple,state,alphabet);
-        states = states.concat(subStates,tuple.transitionFun[state][alphabet])
+    currentStates = _.compact(_.flattenDeep(currentStates));
+    if(checkSubset(array, currentStates)){
+        return _.union(array,currentStates);
     }
-    if(tuple.transitionFun[state]['e']){
-        states = states.concat(handleEpsilon(tuple,alphabet,state));
-    }
-    return states;
-};
-
-var NFAForEmptyString = function (tuple) {
-    var result = tuple.transitionFun[tuple.initialState]["e"].map(function (state) {
-        return tuple.transitionFun[state]["e"] ? tuple.transitionFun[state]["e"] : state
-    });
-    return _.flatMapDeep(result);
+    return getAllEpsilonStates(transitionFunction,_.union(array,currentStates));
 };
 
 var NFAGenerator = function (tuple) {
     return function (string) {
-        var finalState = [];
-        if(string.length == 0 && tuple.transitionFun[tuple.initialState]["e"])
-            finalState = NFAForEmptyString(tuple);
-        else {
-            finalState = string.split('').reduce(function (states,alphabet) {
-                var subStates =  states.map(function (state) {
-                    return stateTraverser(tuple,alphabet,state)
-                });
-                return _.flattenDeep(subStates);
-            },[tuple.initialState]);
-        }
-        return _.intersection(tuple.finalStates, finalState).length > 0;
+        var symbols = string.split('');
+        var initialStates = getAllEpsilonStates(tuple.transitionFun, [tuple.initialState]);
+        var finalStates = symbols.reduce(function (states, symbol) {
+            var traversedStates =  states.map(function (state) {
+                if(tuple.transitionFun[state] && tuple.transitionFun[state][symbol]){
+                    return getAllEpsilonStates(tuple.transitionFun, tuple.transitionFun[state][symbol]);
+                }
+            });
+            return _.flattenDeep(traversedStates)
+        },initialStates);
+        return _.intersection(finalStates, tuple.finalStates).length > 0;
     };
 };
 
