@@ -7,12 +7,16 @@ var checkSubset = function (superSet, subset) {
     return set.length == subset.length;
 };
 
-var getAllEpsilonStates = function (transitionFunction, states) {
-    var array = states;
-    var currentStates = states.map(function (state) {
+var getEpsilonStates = function (states, transitionFunction) {
+    return states.map(function (state) {
         if(transitionFunction[state] && transitionFunction[state]["e"])
             return transitionFunction[state]["e"];
-    });
+    })
+};
+
+var getAllEpsilonStates = function (transitionFunction, states) {
+    var array = states;
+    var currentStates = getEpsilonStates(states,transitionFunction);
     currentStates = _.compact(_.flattenDeep(currentStates));
     if(checkSubset(array, currentStates)){
         return _.union(array,currentStates);
@@ -20,18 +24,22 @@ var getAllEpsilonStates = function (transitionFunction, states) {
     return getAllEpsilonStates(transitionFunction,_.union(array,currentStates));
 };
 
+var reducer = function (tuple,symbols,initialStates) {
+    return symbols.reduce(function (states, symbol) {
+        var traversedStates = states.map(function (state) {
+            if (tuple.transitionFun[state] && tuple.transitionFun[state][symbol]) {
+                return getAllEpsilonStates(tuple.transitionFun, tuple.transitionFun[state][symbol]);
+            }
+        });
+        return _.flattenDeep(traversedStates);
+    }, initialStates);
+};
+
 var NFAGenerator = function (tuple) {
     return function (string) {
         var symbols = string.split('');
         var initialStates = getAllEpsilonStates(tuple.transitionFun, [tuple.initialState]);
-        var finalStates = symbols.reduce(function (states, symbol) {
-            var traversedStates =  states.map(function (state) {
-                if(tuple.transitionFun[state] && tuple.transitionFun[state][symbol]){
-                    return getAllEpsilonStates(tuple.transitionFun, tuple.transitionFun[state][symbol]);
-                }
-            });
-            return _.flattenDeep(traversedStates)
-        },initialStates);
+        var finalStates = reducer(tuple,symbols,initialStates);
         return _.intersection(finalStates, tuple.finalStates).length > 0;
     };
 };
